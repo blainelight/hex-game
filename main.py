@@ -56,6 +56,10 @@ def is_adjacent(cell1, cell2):
     x2, y2 = cell2
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2) < 2 * horiz_dist
 
+# Create a variable to store error message in game
+error_message = None
+
+
 # Main loop
 running = True
 while running:
@@ -112,7 +116,6 @@ while running:
     if not cursor_set:
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)  # Reset to arrow if not over hex
 
-    # Mouse click detection
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -123,33 +126,46 @@ while running:
             mouse_x, mouse_y = event.pos
             log_file.write(f"Mouse clicked at: ({mouse_x}, {mouse_y})\n")
 
+            # Reset error message
+            error_message = None
+
             # Check if the click is within a hex
             for center_x, center_y in hex_centers:
                 distance = math.sqrt((center_x - mouse_x) ** 2 + (center_y - mouse_y) ** 2)
                 log_file.write(f"Hex center at: ({center_x}, {center_y})\n")
                 log_file.write(f"Distance to hex center: {distance}\n")
                 if distance < hex_radius:
-                    if orange_cell is not None and math.sqrt((center_x - orange_cell[0]) ** 2 + (center_y - orange_cell[1]) ** 2) < 1e-6:
+                    if orange_cell is not None and math.sqrt(
+                            (center_x - orange_cell[0]) ** 2 + (center_y - orange_cell[1]) ** 2) < 1e-6:
                         if any(is_adjacent((center_x, center_y), owned_cell) for owned_cell in
                                owned_cells[current_player]):
-                            scores[current_player] += 3  # Increase score by 3 for orange
-                            hex_states[(center_x, center_y)] = colors[
-                                current_player]  # Set color to current player's color
-                            owned_cells[current_player].append((center_x, center_y))  # Add to owned cells
-                            orange_cell = None  # Remove orange cell
+                            scores[current_player] += 3
+                            hex_states[(center_x, center_y)] = colors[current_player]
+                            owned_cells[current_player].append((center_x, center_y))
+                            orange_cell = None
+                            current_player = 1 - current_player  # Switch player
+                        else:
+                            error_message = "That is an illegal move. You can only click on an Orange hex if you are adjacent to that hex already. Please click on a blank cell to continue."
                     elif (center_x, center_y) not in hex_states:
                         hex_states[(center_x, center_y)] = colors[current_player]
-                        logging.debug(f"Cell ({center_x}, {center_y}) set to color {colors[current_player]}") #logging the color changes
-                        scores[current_player] += 1  # Increase the score
+                        logging.debug(f"Cell ({center_x}, {center_y}) set to color {colors[current_player]}")
+                        scores[current_player] += 1
                         owned_cells[current_player].append((center_x, center_y))
-                    current_player = 1 - current_player  # Switch player
+                        current_player = 1 - current_player  # Switch player
 
-                    if current_player == 0:  # Right after Blue's turn
+                    # Generate a new orange cell
+                    if current_player == 0:
                         available_cells = [cell for cell in hex_centers if cell not in hex_states]
-                        if available_cells:  # Check if there are any available cells left
+                        if available_cells:
                             orange_cell = random.choice(available_cells)
-                            hex_states[orange_cell] = (255, 165, 0)  # Set color to orange
+                            hex_states[orange_cell] = (255, 165, 0)
+
                     break  # Stop checking further
+
+    # Display the error message if it exists
+    if error_message:
+        error_text = small_font.render(error_message, True, (255, 0, 0))
+        screen.blit(error_text, (580, 110))
 
     # Draw UI for scores
     header = big_font.render("Player 1, Player 2", True, (255, 255, 255))
