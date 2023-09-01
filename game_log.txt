@@ -1,0 +1,7 @@
+DEBUG:root:Cell (431.0, 144.11542731880104) set to color (255, 0, 0)
+DEBUG:root:Cell (350.0, 196.07695154586736) set to color (0, 0, 255)
+DEBUG:root:Cell (377.0, 248.03847577293368) set to color (255, 0, 0)
+DEBUG:root:Cell (269.0, 248.03847577293368) set to color (0, 0, 255)
+DEBUG:root:Cell (323.0, 144.11542731880104) set to color (255, 0, 0)
+DEBUG:root:Cell (377.0, 248.03847577293368) set to color (0, 0, 255)
+DEBUG:root:Cell (269.0, 144.11542731880104) set to color (0, 0, 255)
